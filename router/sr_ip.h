@@ -14,4 +14,6 @@ int send_ip_packet(struct sr_instance* sr,
 		   uint8_t* packet, 
 		   unsigned len);
 
+sr_ip_hdr_t* check_sum(uint8_t* packet, unsigned len);
+
 #endif
