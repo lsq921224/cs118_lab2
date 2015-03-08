@@ -13,12 +13,13 @@ void handle_ip_packet(struct sr_instance* sr, uint8_t* packet, unsigned len)
   struct sr_ip_hdr* ip_header = (struct sr_ip_hdr*)packet;
   uint32_t src_ip = ip_header->ip_src;
   uint32_t des_ip = ip_header->ip_dst;
+
+}
+
+
+sr_ip_hdr_t* check_sum(uint8_t* packet, unsigned len)
+{
   
-
-
-
-
-
 
 
 
