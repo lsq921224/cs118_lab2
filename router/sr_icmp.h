@@ -6,6 +6,7 @@
 
 #define ICMP_HEADER_LEN 8
 
+/* keep this function private
 void send_icmp(sr_instance_t* sr,
 		uint32_t des_ip,
 		uint32_t src_ip,
@@ -13,6 +14,7 @@ void send_icmp(sr_instance_t* sr,
 		unsigned len,
 		uint8_t type,
 		uint8_t code);
+*/
 
 void icmp_echo(sr_instance_t* sr, 
 		uint32_t des_ip, 
