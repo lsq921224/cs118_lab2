@@ -6,24 +6,32 @@
 
 #define ICMP_HEADER_LEN 8
 
-void icmp_echo(sr_instance_t sr, 
+void send_icmp(sr_instance_t* sr,
+		uint32_t des_ip,
+		uint32_t src_ip,
+		uint8_t* data,
+		unsigned len,
+		uint8_t type,
+		uint8_t code);
+
+void icmp_echo(sr_instance_t* sr, 
 		uint32_t des_ip, 
 		uint32_t src_ip, 
 		uint8_t* packet, 
 		unsigned len);
 
-void icmp_port_unreachable (sr_instance_t sr, 
+void icmp_port_unreachable (sr_instance_t* sr, 
 				uint32_t des_ip, 
 				uint32_t src_ip,
 				uint8_t* packet, 
 				unsigned len);
 
-void icmp_time_exceed (sr_instance_t sr,
+void icmp_time_exceed (sr_instance_t* sr,
 			uint32_t des_ip,
 			uint8_t* packet,
 			unsigned len);
 
-void icmp_net_unreachable (sr_instance_t sr,
+void icmp_net_unreachable (sr_instance_t* sr,
 				uint32_t des_ip,
 				uint32_t src_ip,
 				uint8_t* packet,

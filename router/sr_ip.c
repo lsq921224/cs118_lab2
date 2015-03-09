@@ -34,7 +34,7 @@ void handle_ip_packet(sr_instance_t sr, uint8_t* packet, unsigned len)
 	ip_header -> ip_sum = 0;
 	ip_header -> ip_sum = cksum(ip_header, IPV4_HEADER_LEN);
 	sr_rt_t route = find_routing_entry(sr, des_ip); 
-	if (route == 0)		// if routing entry not found ->ICMP unreachable
+	if (route == 0)		// if routing entry not found ->ICMP net unreachable
 	{
 		icmp_net_unreachable(sr, src_ip, 0, packet, len);
 		return;
