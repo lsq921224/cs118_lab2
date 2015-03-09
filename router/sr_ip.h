@@ -6,6 +6,8 @@
 
 #define IPV4_HEADER_LEN 20
 #define DEFAULT_TTL 64
+#define ETHER_HEADER_LEN 14
+#define IP_ADDR_LEN 4
 
 int is_this_for_me(sr_instance_t* sr, 
 		   uint32_t ip);
@@ -20,6 +22,12 @@ int send_ip_packet(sr_instance_t* sr,
 			unsigned char protocol, 
 			uint8_t* packet, 
 			unsigned len);
+
+int send_packet(sr_instance_t* sr,
+		uint32_t des_ip,
+		uint16_t type,
+		uint8_t* packet,
+		unsigned len);
 
 sr_ip_hdr_t* check_sum(uint8_t* packet, unsigned len);
 
