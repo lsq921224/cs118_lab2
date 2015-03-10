@@ -22,6 +22,14 @@
 /* icmp min length */
 #define ICMP_MINLEN		8
 
+unsigned max(unsigned a, unsigned b)
+{
+	if (a > b)
+		return a;
+	else
+		return b;
+}
+
 void send_icmp(sr_instance_t* sr,
 		uint32_t des_ip,
 		uint32_t src_ip,
@@ -55,7 +63,7 @@ void icmp_echo(sr_instance_t* sr,
 	uint16_t tempSum = icmp_header-> icmp_sum;
 	icmp_header -> icmp_sum = 0;
 	icmp_header -> icmp_sum = cksum(icmp_header, icmp_len);
-	if (tempSum != icmp_header->sum)
+	if (tempSum != icmp_header-> icmp_sum)
 	{
 		printf("ICMP check sum failed!");
 		return;
@@ -81,7 +89,7 @@ void icmp_time_exceed (sr_instance_t* sr,
 			unsigned len)
 {
 	unsigned min_len = max(IPV4_HEADER_LEN + ICMP_MINLEN, len);
-	send_icmp(sr, des_ip, 0, packet, len, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL);
+	send_icmp(sr, des_ip, 0, packet, min_len, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL);
 }
 
 void icmp_net_unreachable (sr_instance_t* sr,
@@ -91,6 +99,6 @@ void icmp_net_unreachable (sr_instance_t* sr,
 				unsigned len)
 {
 	unsigned min_len = max(IPV4_HEADER_LEN + ICMP_MINLEN, len);
-	send_icmp(sr, des_ip, src_ip, packet, len, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
+	send_icmp(sr, des_ip, src_ip, packet, min_len, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 
 }

@@ -34,8 +34,9 @@ struct sr_rt
     struct in_addr mask;
     char   interface[sr_IFACE_NAMELEN];
     struct sr_rt* next;
-} sr_rt_t;
+};
 
+typedef struct sr_rt sr_rt_t;
 
 int sr_load_rt(struct sr_instance*,const char*);
 void sr_add_rt_entry(struct sr_instance*, struct in_addr,struct in_addr,

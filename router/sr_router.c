@@ -21,6 +21,7 @@
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_utils.h"
+#include "sr_ip.h"
 
 /*---------------------------------------------------------------------
  * Method: sr_init(void)
@@ -79,6 +80,27 @@ void sr_handlepacket(struct sr_instance* sr,
   printf("*** -> Received packet of length %d \n",len);
 
   /* fill in code here */
+  if (len < ETHER_HEADER_LEN)
+	return;
+  /* 
+  unsigned short type = ntohs(*(unsigned short*)(packet + ETHER_ADDR_LEN + ETHER_ADDR_LEN));
+  */ 
+  enum sr_ethertype t = (enum sr_ethertype)ethertype(packet);
+  switch (t) {
+	case ethertype_ip:
+	{
+		fprintf(stderr, "receiving IP packet..\n");
+		handle_ip_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN);
+		break;
+	}
+	case ethertype_arp:
+	{
+		/* handle_arp_packet */
+		break;
+	}
+	default:
+		break;
+	}
 
 }/* end sr_ForwardPacket */
 

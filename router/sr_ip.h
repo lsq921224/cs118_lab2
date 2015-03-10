@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include "sr_router.h"
+#include "sr_rt.h"
 
 #define IPV4_HEADER_LEN 20
 #define DEFAULT_TTL 64
@@ -29,6 +30,14 @@ int send_packet(sr_instance_t* sr,
 		uint8_t* packet,
 		unsigned len);
 
-sr_ip_hdr_t* check_sum(uint8_t* packet, unsigned len);
+char* find_interface(sr_instance_t* sr,
+			sr_rt_t* route,
+			unsigned char* src_mac);
 
+int find_dst_mac_in_arp(sr_instance_t* sr,
+			sr_rt_t* route,
+			unsigned char* des_mac);
+
+sr_rt_t* find_routing_entry(sr_instance_t* sr,
+				uint32_t des_ip);
 #endif

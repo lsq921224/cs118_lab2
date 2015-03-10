@@ -54,7 +54,8 @@ struct sr_instance
     struct sr_arpcache cache;   /* ARP cache */
     pthread_attr_t attr;
     FILE* logfile;
-} sr_instance_t;
+};
+typedef struct sr_instance sr_instance_t;
 
 /* -- sr_main.c -- */
 int sr_verify_routing_table(struct sr_instance* sr);
