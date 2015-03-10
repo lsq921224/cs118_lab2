@@ -28,6 +28,7 @@ void handle_ip_packet(sr_instance_t* sr, uint8_t* packet, unsigned len)
 		{
 			printf("Received a message with TCP or UDP\n");
 			icmp_port_unreachable(sr, src_ip, des_ip, packet, len);
+			return;
 		}
 		icmp_echo(sr, des_ip, src_ip, packet, len);/* ICMP -> ICMP processing */
   	}
@@ -95,8 +96,8 @@ int send_packet (sr_instance_t* sr,
 		memcpy(pkt + ETHER_ADDR_LEN, src_mac, ETHER_ADDR_LEN);
 		memcpy(pkt + ETHER_ADDR_LEN * 2, &type, 2);
 		memcpy(pkt + ETHER_HEADER_LEN, packet, len);
-		struct sr_arpreqp *arp = sr_arpcache_queuereq(&(sr->cache), route->gw.s_addr, pkt, ETHER_HEADER_LEN + len, interface);
-		/* handle_arpreq(sr, arp); */
+		struct sr_arpreq *arp = sr_arpcache_queuereq(&(sr->cache), route->gw.s_addr, pkt, ETHER_HEADER_LEN + len, interface);
+		/* FIXME handle_arpreq(sr, arp); */
 	}
 	return -1;				/* else cannot send packet */
 

@@ -95,7 +95,7 @@ void sr_handlepacket(struct sr_instance* sr,
 	}
 	case ethertype_arp:
 	{
-		/* handle_arp_packet */
+		/* FIXME handle_arp_packet(...) */
 		break;
 	}
 	default:
