@@ -26,7 +26,7 @@ void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 			unsigned char value[ETHER_ADDR_LEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 			while(thisInterface != NULL){
 
-				sr_arp_send_message(sr, (uint16_t) ARP_REQUEST, value, /* STOPPING HERE .. TODO */ req->ip, thisInterface);
+				sr_arp_send_message(sr, arp_op_request, value, /* STOPPING HERE .. TODO */ req->ip, thisInterface);
 				req -> sent = time(0);
 				req -> times_sent++;
 				thisInterface = thisInterface->next;
