@@ -100,7 +100,7 @@ void sr_handlepacket(struct sr_instance* sr,
 	case ethertype_arp:
 	{
 		/* FIXME handle_arp_packet(...) */
-		handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN , interface);
+		sr_handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN , interface);
 		break;
 	}
 	default:
