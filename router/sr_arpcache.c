@@ -11,13 +11,54 @@
 #include "sr_if.h"
 #include "sr_protocol.h"
 
+void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
+	if (difftime(time(0), req->sent > 1)) {
+
+		if (req->times_sent >= 5) {
+			/* fail, host is unreachable after 5 attempts */
+			send_unreachable_to_queued(sr, req);
+			sr_arpreq_destroy(&sr->cache, req);
+		}
+		else {
+			/* send the arp request and increment times_sent */
+			/* TODO: do we flood to all interfaces? */
+			struct sr_if* thisInterface = sr->if_list;
+			unsigned char value[ETHER_ADDR_LEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+			while(thisInterface != NULL){
+
+				sr_arp_send_message(sr, (uint16_t) ARP_REQUEST, value, /* STOPPING HERE .. TODO */ req->ip, thisInterface);
+				req -> sent = time(0);
+				req -> times_sent++;
+				thisInterface = thisInterface->next;
+			}
+		}
+	}
+}
+
 /* 
   This function gets called every second. For each request sent out, we keep
   checking whether we should resend an request or destroy the arp request.
   See the comments in the header file for an idea of what it should look like.
 */
 void sr_arpcache_sweepreqs(struct sr_instance *sr) { 
-    /* Fill this in */
+    /* Fill this in 
+	   run through all the current arp requests and resend them
+	   if they have been sent > 5 times, then they errored and we must send error icmp
+	   destination host unreachable should go back to the senders of packets that were waiting on this request */
+
+	struct sr_arpreq * current = sr->cache.requests;
+	struct sr_arpreq * next;
+	if (current) next = current->next;
+
+	while (current != NULL) {
+
+
+		sr_check_timeout_req(sr, current);
+		current = next;
+		if (current) next = current->next;
+
+	}
+
 }
 
 /* You should not need to touch the rest of this code. */
