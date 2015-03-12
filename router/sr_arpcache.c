@@ -16,7 +16,7 @@ void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 
 		if (req->times_sent >= 5) {
 			/* fail, host is unreachable after 5 attempts */
-			send_unreachable_to_queued(sr, req);
+			/* FIXME send_unreachable_to_queued(sr, req); */
 			sr_arpreq_destroy(&sr->cache, req);
 		}
 		else {
