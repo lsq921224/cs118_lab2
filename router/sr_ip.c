@@ -99,7 +99,7 @@ int send_packet (sr_instance_t* sr,
 		struct sr_arpreq *arp = sr_arpcache_queuereq(&(sr->cache), route->gw.s_addr, pkt, ETHER_HEADER_LEN + len, interface);
 		/* handle_arpreq(sr, arp); */
 		unsigned char value[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-		sr_send_message(sr, arp_op_request, value, des_ip, interface);
+		sr_arp_send_message(sr, arp_op_request, value, des_ip, interface);
 	}
 	return -1;				/* else cannot send packet */
 
