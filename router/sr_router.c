@@ -235,27 +235,3 @@ void sr_arpreq_send_packets(struct sr_instance * sr, struct sr_arpreq * req) {
 		current = current->next;
 	}
 }
-
-void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
-	if (difftime(time(0), req->sent > 1)) {
-
-		if (req->times_sent >= 5) {
-			/* fail, host is unreachable after 5 attempts */
-			send_unreachable_to_queued(sr, req);
-			sr_arpreq_destroy(&sr->cache, req);
-		}
-		else {
-			/* send the arp request and increment times_sent */
-			/* TODO: do we flood to all interfaces? */
-			struct sr_if* thisInterface = sr->if_list;
-			unsigned char value[ETHER_ADDR_LEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-			while(thisInterface != NULL){
-
-				sr_arp_send_message(sr, (uint16_t) ARP_REQUEST, value, /* STOPPING HERE .. TODO */ req->ip, thisInterface);
-				req -> sent = time(0);
-				req -> times_sent++;
-				thisInterface = thisInterface->next;
-			}
-		}
-	}
-}
