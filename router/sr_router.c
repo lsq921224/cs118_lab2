@@ -189,31 +189,31 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 	}
 	
 	sr_arp_hdr_t *arphdr = (sr_arp_hdr_t*)(packet);
-	arphdr->ar_hrd = ntohs(arphdr->ar_hrd);		// Convert all network address to host addresses
+	arphdr->ar_hrd = ntohs(arphdr->ar_hrd);		/* Convert all network address to host addresses */
 	arphdr->ar_pro = ntohs(arphdr->ar_pro);
 	arphdr->ar_op = ntohs(arphdr->ar_op);
 	arphdr->ar_sip = ntohl(arphdr->ar_sip);
 	arphdr->ar_tip = ntohl(arphdr->ar_tip);
 	
-	if(arphdr->ar_op == 1){ // Receiving a request
+	if(arphdr->ar_op == 1){ /* Receiving a request */
         memcpy((void*) (arphdr->ar_tha), (void *) (arphdr->ar_sha), (sizeof(unsigned char) * ETHER_ADDR_LEN)); /* switch around the fields (dest to src, vice versa) */
 		uint32_t targetIP = arphdr->ar_tip;
 		arphdr->ar_tip = arphdr->ar_sip;
 		arphdr->ar_sip = targetIP;
         
 		struct sr_if* interfaces = sr->if_list;
-		while(interfaces != NULL){ // Walk through interfaces if any of the interfaces has targetIP address
+		while(interfaces != NULL){ /* Walk through interfaces if any of the interfaces has targetIP address */
 			
-			if(ntohl(interfaces->ip) == targetIP){	// Respond only if there is a match
+			if(ntohl(interfaces->ip) == targetIP){	/* Respond only if there is a match */
                 memcpy((void*) (arphdr->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
-				sr_arp_send_message(sr, ARP_REPLY, arphdr->ar_tha, arphdr->ar_tip, interface); // Send reply with interface that has targetIP address
+				sr_arp_send_message(sr, ARP_REPLY, arphdr->ar_tha, arphdr->ar_tip, interface); /* Send reply with interface that has targetIP address */
 				break;
 			}
             interfaces = interfaces->next;
 		}
 
 	}
-	if (arphdr->ar_op == 2){ // Receiving a reply
+	if (arphdr->ar_op == 2){ /* Receiving a reply */
 		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache, arphdr->ar_sha, arphdr->ar_sip); /* store mapping in arpcache */
 		while(pending != NULL){
 			if(pending->ip == arphdr->ar_sip){
