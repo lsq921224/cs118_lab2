@@ -206,7 +206,7 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 			
 			if(ntohl(interfaces->ip) == targetIP){	/* Respond only if there is a match */
                 memcpy((void*) (arphdr->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
-				sr_arp_send_message(sr, ARP_REPLY, arphdr->ar_tha, arphdr->ar_tip, interface); /* Send reply with interface that has targetIP address */
+				sr_arp_send_message(sr, sr_op_reply, arphdr->ar_tha, arphdr->ar_tip, interface); /* Send reply with interface that has targetIP address */
 				break;
 			}
             interfaces = interfaces->next;
