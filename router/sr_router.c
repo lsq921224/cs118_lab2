@@ -120,8 +120,14 @@ void send_unreachable_to_queued(struct sr_instance * sr, struct sr_arpreq * req)
 	}
 }
 
+void create_ethernet_header (sr_ethernet_hdr_t * eth_hdr, uint8_t* ether_dhost, uint8_t* ether_shost, uint16_t ether_type) {
+	/* MAC addresses are arrays of 8 byte segments so do not need network/host order conversion */
+    memcpy((void *) eth_hdr->ether_dhost, (void *) ether_dhost, sizeof(uint8_t) * ETHER_ADDR_LEN);
+    memcpy((void *) eth_hdr->ether_shost, (void *) ether_shost, sizeof(uint8_t) * ETHER_ADDR_LEN);
+    eth_hdr->ether_type = htons(ether_type);
+}
 
-bool create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned char * ar_sha, uint32_t ar_sip, unsigned char * ar_tha, uint32_t ar_tip) {
+void create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned char * ar_sha, uint32_t ar_sip, unsigned char * ar_tha, uint32_t ar_tip) {
     arp_hdr->ar_hrd = htons(arp_hrd_ethernet);
     arp_hdr->ar_pro = htons(ethertype_ip);
 
@@ -138,7 +144,6 @@ bool create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned c
     }
 
     arp_hdr->ar_tip = htonl(ar_tip);
-    return true;
 }
 
 void sr_arp_send_message(struct sr_instance * sr, unsigned short ar_op, unsigned char * ar_tha, uint32_t ar_tip, char * interface) {
