@@ -220,26 +220,6 @@ void sr_handle_arp_packet(struct sr_instance* sr,
     
 }
 
-void sr_arpcache_sweepreqs(struct sr_instance *sr) { 
-    /* Fill this in 
-	   run through all the current arp requests and resend them
-	   if they have been sent > 5 times, then they errored and we must send error icmp
-	   destination host unreachable should go back to the senders of packets that were waiting on this request */
-
-	struct sr_arpreq * current = sr->cache.requests;
-	struct sr_arpreq * next;
-	if (current) next = current->next;
-
-	while (current != NULL) {
-
-
-		sr_check_timeout_req(sr, current);
-		current = next;
-		if (current) next = current->next;
-
-	}
-
-}
 
 void sr_arpreq_send_packets(struct sr_instance * sr, struct sr_arpreq * req) {
 	struct sr_packet * current = req->packets;
