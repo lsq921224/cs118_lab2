@@ -109,18 +109,6 @@ void sr_handlepacket(struct sr_instance* sr,
 
 }/* end sr_ForwardPacket */
 
-void send_unreachable_to_queued(struct sr_instance * sr, struct sr_arpreq * req) {
-	struct sr_packet * current = req -> packets; /* get the queued packets to the timed-out ARP-Req */
-	struct sr_if* interface = sr_get_interface(sr,current->iface); /* get the interface associated with the request */
-
-
-	while (current != NULL) {
-		sr_ip_hdr_t* currentIPhdr = (void *)(current->buf) + sizeof(sr_ethernet_hdr_t);
-		sr_icmp_send_t3_message(sr, ICMP_T3_TYPE, currentIPhdr, interface);
-		current = current->next;
-	}
-}
-
 void create_ethernet_header (sr_ethernet_hdr_t * eth_hdr, uint8_t* ether_dhost, uint8_t* ether_shost, uint16_t ether_type) {
 	/* MAC addresses are arrays of 8 byte segments so do not need network/host order conversion */
     memcpy((void *) eth_hdr->ether_dhost, (void *) ether_dhost, sizeof(uint8_t) * ETHER_ADDR_LEN);
