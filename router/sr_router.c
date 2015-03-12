@@ -30,6 +30,10 @@
  * Initialize the routing subsystem
  *
  *---------------------------------------------------------------------*/
+#define MAX_SEND_ARP 5
+#define ICMP_T3_TYPE 3
+#define ARP_BROADCAST_MAC 0xFFFFFFFFFFFF /* TODO: can I cast this as a char array? (char*) ... */
+
 
 void sr_init(struct sr_instance* sr)
 {
@@ -104,3 +108,174 @@ void sr_handlepacket(struct sr_instance* sr,
 
 }/* end sr_ForwardPacket */
 
+void send_unreachable_to_queued(struct sr_instance * sr, struct sr_arpreq * req) {
+	struct sr_packet * current = req -> packets; /* get the queued packets to the timed-out ARP-Req */
+	struct sr_if* interface = sr_get_interface(sr,current->iface); /* get the interface associated with the request */
+
+
+	while (current != NULL) {
+		sr_ip_hdr_t* currentIPhdr = (void *)(current->buf) + sizeof(sr_ethernet_hdr_t);
+		sr_icmp_send_t3_message(sr, ICMP_T3_TYPE, currentIPhdr, interface);
+		current = current->next;
+	}
+}
+
+
+bool create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned char * ar_sha, uint32_t ar_sip, unsigned char * ar_tha, uint32_t ar_tip) {
+    arp_hdr->ar_hrd = htons(arp_hrd_ethernet);
+    arp_hdr->ar_pro = htons(ethertype_ip);
+
+    arp_hdr->ar_hln = ETHER_ADDR_LEN * sizeof(uint8_t);
+    arp_hdr->ar_pln = sizeof(uint32_t);
+    arp_hdr->ar_op = htons(arp_op);
+    memcpy((void *) arp_hdr->ar_sha , ar_sha, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    arp_hdr->ar_sip = htonl(ar_sip);
+    if (arp_op == arp_op_reply) {
+    	memcpy((void *) arp_hdr->ar_tha , ar_tha, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    }
+    else {
+    	memset(arp_hdr->ar_tha, 0, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    }
+
+    arp_hdr->ar_tip = htonl(ar_tip);
+    return true;
+}
+
+void sr_arp_send_message(struct sr_instance * sr, unsigned short ar_op, unsigned char * ar_tha, uint32_t ar_tip, char * interface) {
+	/* TODO: do we just use the first item in the list? */
+	struct sr_if * iface = sr_get_interface(sr, interface);
+	if (iface == NULL) {
+		fprintf(stderr, "Invalid Interface: %s.\n", interface);
+		return;
+	}
+
+    uint32_t ar_sip = ntohl(iface->ip);
+    unsigned char * ar_sha = malloc(sizeof(unsigned char) * ETHER_ADDR_LEN);
+    memcpy((void*) ar_sha, iface->addr, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    
+    sr_ethernet_hdr_t * frame = malloc(sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t));
+    create_ethernet_header(frame, ar_tha, (uint8_t *)ar_sha, ethertype_arp);
+    
+    void * ptr = (void *) frame;
+    ptr += sizeof(sr_ethernet_hdr_t);
+
+    create_arp_header((sr_arp_hdr_t *) ptr, ar_op, ar_sha, ar_sip, ar_tha, ar_tip);
+
+    fprintf(stderr, "Sending ARP:\n");
+    print_hdrs((uint8_t *)frame, sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t));
+    sr_send_packet(sr, (uint8_t*) frame, sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t), interface );
+    
+    free(frame);
+}
+
+void sr_arp_request(struct sr_instance * sr, uint32_t ip_addr, uint8_t * packet, unsigned int packet_len, char * interface) {
+	unsigned char value[ETHER_ADDR_LEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+	sr_arp_send_message(sr, arp_op_request, value, ip_addr, interface);
+	sr_arpcache_queuereq(&(sr->cache), ip_addr, packet, packet_len, interface);
+}
+
+void sr_handle_arp_packet(struct sr_instance* sr,
+                          uint8_t * packet,
+                          unsigned int len,
+                          char* interface) {
+	if (len < sizeof(sr_arp_hdr_t)) {
+		fprintf(stderr, "Packet is less than ARP length!\n");
+		return;
+	}
+	
+	sr_arp_hdr_t *arphdr = (sr_arp_hdr_t*)(packet);
+	arphdr->ar_hrd = ntohs(arphdr->ar_hrd);		// Convert all network address to host addresses
+	arphdr->ar_pro = ntohs(arphdr->ar_pro);
+	arphdr->ar_op = ntohs(arphdr->ar_op);
+	arphdr->ar_sip = ntohl(arphdr->ar_sip);
+	arphdr->ar_tip = ntohl(arphdr->ar_tip);
+	
+	if(arphdr->ar_op == 1){ // Receiving a request
+        memcpy((void*) (arphdr->ar_tha), (void *) (arphdr->ar_sha), (sizeof(unsigned char) * ETHER_ADDR_LEN)); /* switch around the fields (dest to src, vice versa) */
+		uint32_t targetIP = arphdr->ar_tip;
+		arphdr->ar_tip = arphdr->ar_sip;
+		arphdr->ar_sip = targetIP;
+        
+		struct sr_if* interfaces = sr->if_list;
+		while(interfaces != NULL){ // Walk through interfaces if any of the interfaces has targetIP address
+			
+			if(ntohl(interfaces->ip) == targetIP){	// Respond only if there is a match
+                memcpy((void*) (arphdr->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
+				sr_arp_send_message(sr, ARP_REPLY, arphdr->ar_tha, arphdr->ar_tip, interface); // Send reply with interface that has targetIP address
+				break;
+			}
+            interfaces = interfaces->next;
+		}
+
+	}
+	if (arphdr->ar_op == 2){ // Receiving a reply
+		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache, arphdr->ar_sha, arphdr->ar_sip); /* store mapping in arpcache */
+		while(pending != NULL){
+			if(pending->ip == arphdr->ar_sip){
+				sr_arpreq_send_packets(sr, pending);
+			}
+			pending = pending->next;
+		}
+	}
+    
+}
+
+void sr_arpcache_sweepreqs(struct sr_instance *sr) { 
+    /* Fill this in 
+	   run through all the current arp requests and resend them
+	   if they have been sent > 5 times, then they errored and we must send error icmp
+	   destination host unreachable should go back to the senders of packets that were waiting on this request */
+
+	struct sr_arpreq * current = sr->cache.requests;
+	struct sr_arpreq * next;
+	if (current) next = current->next;
+
+	while (current != NULL) {
+
+
+		sr_check_timeout_req(sr, current);
+		current = next;
+		if (current) next = current->next;
+
+	}
+
+}
+
+void sr_arpreq_send_packets(struct sr_instance * sr, struct sr_arpreq * req) {
+	struct sr_packet * current = req->packets;
+
+	while (current != NULL) {
+		struct sr_arpentry * entry = sr_arpcache_lookup(&(sr->cache), req->ip);
+		if (entry != NULL) {
+			unsigned char * destMAC = entry->mac;
+			memcpy(((sr_ethernet_hdr_t *) current->buf)->ether_dhost, destMAC, sizeof(unsigned char) * ETHER_ADDR_LEN);
+			sr_send_packet(sr, current->buf, current->len, current->iface);
+			free(entry);
+		}
+		current = current->next;
+	}
+}
+
+void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
+	if (difftime(time(0), req->sent > 1)) {
+
+		if (req->times_sent >= 5) {
+			/* fail, host is unreachable after 5 attempts */
+			send_unreachable_to_queued(sr, req);
+			sr_arpreq_destroy(&sr->cache, req);
+		}
+		else {
+			/* send the arp request and increment times_sent */
+			/* TODO: do we flood to all interfaces? */
+			struct sr_if* thisInterface = sr->if_list;
+			unsigned char value[ETHER_ADDR_LEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+			while(thisInterface != NULL){
+
+				sr_arp_send_message(sr, (uint16_t) ARP_REQUEST, value, /* STOPPING HERE .. TODO */ req->ip, thisInterface);
+				req -> sent = time(0);
+				req -> times_sent++;
+				thisInterface = thisInterface->next;
+			}
+		}
+	}
+}
