@@ -99,6 +99,7 @@ void sr_handlepacket(struct sr_instance* sr,
 	}
 	case ethertype_arp:
 	{
+		fprintf(stderr, "Receiving ARP packet..\n");
 		/* FIXME handle_arp_packet(...) */
 		sr_handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN , interface);
 		break;
@@ -129,10 +130,10 @@ void create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned c
     	memcpy((void *) arp_hdr->ar_tha , ar_tha, sizeof(unsigned char) * ETHER_ADDR_LEN);
     }
     else {
-    	memset(arp_hdr->ar_tha, 0, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    	memset(arp_hdr->ar_tha, 0xFF, sizeof(unsigned char) * ETHER_ADDR_LEN);
     }
 
-    arp_hdr->ar_tip = htonl(ar_tip);
+    arp_hdr->ar_tip = ar_tip;
 }
 
 void sr_arp_send_message(struct sr_instance * sr, unsigned short ar_op, unsigned char * ar_tha, uint32_t ar_tip, char * interface) {
@@ -203,9 +204,18 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 
 	}
 	if (arphdr->ar_op == 2){ /* Receiving a reply */
-		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache, arphdr->ar_sha, arphdr->ar_sip); /* store mapping in arpcache */
+
+		fprintf(stderr, "ar_op is 2\n");
+		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache,arphdr->ar_sha,htonl(arphdr->ar_sip)); 
+		if(pending == NULL)
+		{
+			fprintf(stderr,"pending is null\n");
+		}  
 		while(pending != NULL){
-			if(pending->ip == arphdr->ar_sip){
+			fprintf(stderr,"Received ARP reply with address: ");
+			/*print_addr_ip_int(arphdr->ar_sip);*/
+			print_addr_ip_int(ntohl(pending->ip));
+			if(ntohl(pending->ip) == arphdr->ar_sip){			
 				sr_arpreq_send_packets(sr, pending);
 			}
 			pending = pending->next;
