@@ -94,12 +94,14 @@ void sr_handlepacket(struct sr_instance* sr,
 	case ethertype_ip:
 	{
 		fprintf(stderr, "receiving IP packet..\n");
+		print_hdrs(packet,len);
 		handle_ip_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN);
 		break;
 	}
 	case ethertype_arp:
 	{
 		fprintf(stderr, "Receiving ARP packet..\n");
+		print_hdrs(packet, len);
 		/* FIXME handle_arp_packet(...) */
 		sr_handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN , interface);
 		break;
@@ -196,7 +198,7 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 			
 			if(ntohl(interfaces->ip) == targetIP){	/* Respond only if there is a match */
                 memcpy((void*) (arphdr->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
-				sr_arp_send_message(sr, arp_op_reply, arphdr->ar_tha, arphdr->ar_tip, interface); /* Send reply with interface that has targetIP address */
+				sr_arp_send_message(sr, arp_op_reply, arphdr->ar_tha, htonl(arphdr->ar_tip), interface); /* Send reply with interface that has targetIP address */
 				break;
 			}
             interfaces = interfaces->next;
@@ -211,14 +213,27 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 		{
 			fprintf(stderr,"pending is null\n");
 		}  
-		while(pending != NULL){
+		if (pending != NULL){
 			fprintf(stderr,"Received ARP reply with address: ");
+			struct sr_packet *pkt = pending -> packets;
+			while (pkt != NULL)
+			{
+				fprintf(stderr, "now have arp entry, send packet again\n");
+				memcpy (pkt -> buf,  arphdr->ar_sha, ETHER_ADDR_LEN);
+				print_hdrs(pkt ->buf, pkt-> len);
+				sr_send_packet(sr, pkt -> buf, pkt->len, interface);
+				pkt = pkt->next;
+
+			}
+			sr_arpreq_destroy(&(sr->cache), pending);
 			/*print_addr_ip_int(arphdr->ar_sip);*/
+			/*
 			print_addr_ip_int(ntohl(pending->ip));
 			if(ntohl(pending->ip) == arphdr->ar_sip){			
 				sr_arpreq_send_packets(sr, pending);
 			}
 			pending = pending->next;
+			*/
 		}
 	}
     

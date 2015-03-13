@@ -21,7 +21,7 @@ void handle_ip_packet(sr_instance_t* sr, uint8_t* packet, unsigned len)
 	}
  	uint32_t src_ip = ip_header->ip_src;
 	uint32_t des_ip = ip_header->ip_dst;
-  	if (is_this_for_me(sr, des_ip)) 		/* if destined to router*/
+  	if (is_this_for_me(sr, des_ip) == 1) 		/* if destined to router*/
   	{  
 		fprintf(stderr, "This package is for me!\n");
 		if (ip_header->ip_p != IPPROTO_ICMP)	/* UDP TCP -> iCMP unreachable */
@@ -40,6 +40,7 @@ void handle_ip_packet(sr_instance_t* sr, uint8_t* packet, unsigned len)
 			icmp_time_exceed(sr, src_ip, packet, len);
 			return;
 		}
+		
 		send_packet(sr, ip_header -> ip_dst, htons(ethertype_ip), packet, len);							/* else try to send ip_packet */				
   	}
 }
@@ -64,6 +65,7 @@ int send_packet (sr_instance_t* sr,
 {
 	unsigned char des_mac[ETHER_ADDR_LEN];
 	unsigned char src_mac[ETHER_ADDR_LEN];
+	/*print_hdr_ip(packet); */
 	sr_ip_hdr_t* ip_header = (sr_ip_hdr_t*)packet;
 	uint32_t src_ip = ip_header->ip_src;
 	sr_rt_t* route = find_routing_entry(sr, des_ip);	/* try to find routing entry */
@@ -76,6 +78,8 @@ int send_packet (sr_instance_t* sr,
 	int arp = find_dst_mac_in_arp(sr, route, des_mac);	/* try to lookup arp table */
 	if (interface != 0 && arp == 1)				/* if both found, send ip packet */
 	{
+		fprintf(stderr, "printing sending IP header\n");
+		print_hdr_ip(packet);
 		uint8_t* pkt = malloc(ETHER_HEADER_LEN + len);
 		memcpy(pkt, des_mac, ETHER_ADDR_LEN);
 		memcpy(pkt + ETHER_ADDR_LEN, src_mac, ETHER_ADDR_LEN);
@@ -99,7 +103,7 @@ int send_packet (sr_instance_t* sr,
 		struct sr_arpreq *arp = sr_arpcache_queuereq(&(sr->cache), route->gw.s_addr, pkt, ETHER_HEADER_LEN + len, interface);
 		/* handle_arpreq(sr, arp); */
 		unsigned char value[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-		sr_arp_send_message(sr, arp_op_request, value, htons(des_ip), interface);
+		sr_arp_send_message(sr, arp_op_request, value, des_ip, interface);
 	}
 	return -1;				/* else cannot send packet */
 
