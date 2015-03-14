@@ -40,7 +40,7 @@ void icmp_net_unreachable (sr_instance_t* sr,
 				unsigned len);
 
 void icmp_host_unreachable( sr_instance_t* sr,
-                            uint32_t dest_ip,
+                            uint32_t des_ip,
                             uint32_t src_ip,
                             uint8_t* packet,
                             unsigned len );
