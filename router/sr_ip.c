@@ -100,6 +100,11 @@ int send_packet (sr_instance_t* sr,
 		memcpy(pkt + ETHER_ADDR_LEN, src_mac, ETHER_ADDR_LEN);
 		memcpy(pkt + ETHER_ADDR_LEN * 2, &type, 2);
 		memcpy(pkt + ETHER_HEADER_LEN, packet, len);
+		char *arr = pkt -> buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
+		fprintf(stderr, "printing payload when storing to arpcache queue\n");
+				   for (int i = 0; i < pkt->len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
+					 fprintf(stderr, " %2x", arr[i]);
+					 }
 		struct sr_arpreq *arp = sr_arpcache_queuereq(&(sr->cache), route->gw.s_addr, pkt, ETHER_HEADER_LEN + len, interface);
 		/* handle_arpreq(sr, arp); */
 		unsigned char value[ETHER_ADDR_LEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
