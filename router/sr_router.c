@@ -222,6 +222,10 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 				fprintf(stderr, "now have arp entry, send packet again\n");
 				memcpy (pkt -> buf,  arphdr->ar_sha, ETHER_ADDR_LEN);
 				print_hdrs(pkt ->buf, pkt-> len);
+				char *arr = pkt -> buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
+				   for (int i = 0; i < pkt->len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
+					 fprintf(stderr, " %2x", arr[i]);
+					 }
 				fprintf(stderr, "sending vai inerface : %s packet length: %d\n", pkt->iface, pkt->len);
 				sr_send_packet(sr, pkt -> buf, 98, pkt->iface);
 				pkt = pkt->next;
