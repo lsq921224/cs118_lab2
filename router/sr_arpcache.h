@@ -74,6 +74,8 @@
 #define SR_ARPCACHE_SZ    100  
 #define SR_ARPCACHE_TO    15.0
 
+
+                        
 struct sr_packet {
     uint8_t *buf;               /* A raw Ethernet frame, presumably with the dest MAC empty */
     unsigned int len;           /* Length of raw Ethernet frame */
@@ -147,4 +149,9 @@ int   sr_arpcache_init(struct sr_arpcache *cache);
 int   sr_arpcache_destroy(struct sr_arpcache *cache);
 void *sr_arpcache_timeout(void *cache_ptr);
 
+int handle_arpreq(struct sr_instance *sr, struct sr_arpreq *req);
+
+void handle_arp_packet(struct sr_instance *sr, 
+                        struct sr_arp_hdr* arp_header, 
+                        char *interface );
 #endif
