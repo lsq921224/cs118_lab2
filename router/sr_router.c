@@ -138,7 +138,7 @@ void create_arp_header(sr_arp_hdr_t * arp_hdr, unsigned short arp_op, unsigned c
     	memcpy((void *) arp_hdr->ar_tha , ar_tha, sizeof(unsigned char) * ETHER_ADDR_LEN);
     }
     else {
-    	memset(arp_hdr->ar_tha, 0xFF, sizeof(unsigned char) * ETHER_ADDR_LEN);
+    	memset(arp_hdr->ar_tha, 0, sizeof(unsigned char) * ETHER_ADDR_LEN);
     }
 
     arp_hdr->ar_tip = ar_tip;
