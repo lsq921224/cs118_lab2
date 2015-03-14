@@ -215,6 +215,7 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 		}  
 		if (pending != NULL){
 			fprintf(stderr,"Received ARP reply with address: ");
+			/*
 			struct sr_packet *pkt = pending -> packets;
 			while (pkt != NULL)
 			{
@@ -227,14 +228,14 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 
 			}
 			sr_arpreq_destroy(&(sr->cache), pending);
-			/*print_addr_ip_int(arphdr->ar_sip);*/
-			/*
+			print_addr_ip_int(arphdr->ar_sip);*/
+			
 			print_addr_ip_int(ntohl(pending->ip));
 			if(ntohl(pending->ip) == arphdr->ar_sip){			
 				sr_arpreq_send_packets(sr, pending);
 			}
 			pending = pending->next;
-			*/
+			
 		}
 	}
     
