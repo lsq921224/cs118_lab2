@@ -223,7 +223,7 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 				memcpy (pkt -> buf,  arphdr->ar_sha, ETHER_ADDR_LEN);
 				print_hdrs(pkt ->buf, pkt-> len);
 				fprintf(stderr, "sending vai inerface : %s\n", pkt->iface);
-				sr_send_packet(sr, pkt -> buf, 1, pkt->iface);
+				sr_send_packet(sr, pkt -> buf, pkt->len - 25, pkt->iface);
 				pkt = pkt->next;
 
 			}
