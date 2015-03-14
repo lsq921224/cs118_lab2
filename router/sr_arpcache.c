@@ -33,6 +33,21 @@ void sr_arpcache_sweepreqs(struct sr_instance *sr) {
      }
 }
 
+struct sr_if* lookup_interface(struct sr_instance* sr,struct sr_rt* route)
+{
+  struct sr_if *interface = sr->if_list;
+  if(route != 0)
+  {
+    while(interface != 0)
+    {
+      if(strcmp(interface->name, route->interface) == 0)
+        return interface;
+      interface = interface->next;
+    }
+  }
+  return 0;
+}   
+
 /***************add by xin*************/
 void send_arp_request( struct sr_instance* sr, uint32_t ip)
 {
@@ -49,7 +64,7 @@ void send_arp_request( struct sr_instance* sr, uint32_t ip)
   memset(arp_header->ar_tha, 0, ETHER_ADDR_LEN );
   arp_header->ar_tip = ip;
   
-  struct sr_rt* rt = lookup_route(sr, ip);
+  struct sr_rt* rt = find_routing_entry(sr, ip);
   struct sr_if* interface = lookup_interface(sr, rt);
 
   arp_header->ar_sip = interface->ip;
