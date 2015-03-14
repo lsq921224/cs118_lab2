@@ -231,11 +231,11 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 				fprintf(stderr, "printing out payload when sending\n");
 				char *arr = pkt -> buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
 				int i;
-				   for (i = 0; i < len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
+				   for (i = 0; i < pkt->len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
 					 fprintf(stderr, " %2x", arr[i]);
 					 }
 				fprintf(stderr, "sending vai inerface : %s packet length: %d\n", pkt->iface, pkt->len);
-				sr_send_packet(sr, pkt -> buf, 98, pkt->iface);
+				sr_send_packet(sr, pkt -> buf, pkt->len, pkt->iface);
 				pkt = pkt->next;
 
 			}
