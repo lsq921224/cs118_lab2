@@ -45,7 +45,7 @@ void send_arp_request( struct sr_instance* sr, uint32_t ip)
   arp_header->ar_pro = htons( ethertype_ip );
   arp_header->ar_hln = ETHER_ADDR_LEN;
   arp_header->ar_pln = IP_ADDR_LEN;
-  arp_header->ar_op  = htons( arp_request );
+  arp_header->ar_op  = htons( arp_op_request );
   memset(arp_header->ar_tha, 0, ETHER_ADDR_LEN );
   arp_header->ar_tip = ip;
   
@@ -77,7 +77,7 @@ void send_arp_reply(struct sr_instance* sr, struct sr_arp_hdr* req, struct sr_if
     req->ar_tip = req->ar_sip;
     memcpy(req->ar_sha, interface->addr, ETHER_ADDR_LEN );
     req->ar_sip = interface->ip;
-    req->ar_op = htons(arp_reply);
+    req->ar_op = htons(arp_op_reply);
 
     uint8_t* buffer = malloc( ETHER_HEADER_LEN + sizeof(struct sr_arp_hdr));
     memcpy( buffer, req->ar_tha, ETHER_ADDR_LEN );
@@ -169,7 +169,7 @@ void handle_arp_packet(struct sr_instance *sr,
 
 
     if( hrd != arp_hrd_ethernet || pro != ethertype_ip || arp_header->ar_hln != ETHER_ADDR_LEN ||
-        arp_header->ar_pln != IP_ADDR_LEN || (op != arp_request && op != arp_reply) ) 
+        arp_header->ar_pln != IP_ADDR_LEN || (op != arp_op_request && op != arp_op_reply) ) 
     {
         /*printf("get bad arp packet\n");*/
         return;
@@ -202,7 +202,7 @@ void handle_arp_packet(struct sr_instance *sr,
          }
        }
       
-       if(op == arp_request)
+       if(op == arp_op_request)
          send_arp_reply(sr, arp_header, interf);
        break;
     }
