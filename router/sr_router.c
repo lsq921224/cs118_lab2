@@ -103,7 +103,7 @@ void sr_handlepacket(struct sr_instance* sr,
 		fprintf(stderr, "Receiving ARP packet..\n");
 		print_hdrs(packet, len);
 		/* FIXME handle_arp_packet(...) */
-		handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN , interface);
+		handle_arp_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN);
 		break;
 	}
 	default:
