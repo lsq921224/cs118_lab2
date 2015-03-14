@@ -102,3 +102,14 @@ void icmp_net_unreachable (sr_instance_t* sr,
 	send_icmp(sr, des_ip, src_ip, packet, min_len, ICMP_DEST_UNREACH, ICMP_NET_UNREACH);
 
 }
+
+void icmp_host_unreachable( sr_instance_t* sr,
+                            uint32_t des_ip,
+                            uint32_t src_ip,
+                            uint8_t* packet,
+                            unsigned len )
+{
+	unsigned min_len = max(IPV4_HEADER_LEN + ICMP_MINLEN, len);
+	send_icmp(sr, des_ip, src_ip, packet, min_len, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
+
+}
