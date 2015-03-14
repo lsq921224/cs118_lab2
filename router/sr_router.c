@@ -97,7 +97,8 @@ void sr_handlepacket(struct sr_instance* sr,
 		print_hdrs(packet,len);
 		char *arr = packet + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
 		fprintf(stderr, "printing payload when receiving\n");
-				   for (int i = 0; i < len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
+		int i;
+				   for (i = 0; i < len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
 					 fprintf(stderr, " %2x", arr[i]);
 					 }
 		handle_ip_packet(sr, packet + ETHER_HEADER_LEN, len - ETHER_HEADER_LEN);
@@ -229,7 +230,8 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 				print_hdrs(pkt ->buf, pkt-> len);
 				fprintf(stderr, "printing out payload when sending\n");
 				char *arr = pkt -> buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
-				   for (int i = 0; i < pkt->len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
+				int i;
+				   for (i = 0; i < len - ETHER_HEADER_LEN - IPV4_HEADER_LEN; i ++) {
 					 fprintf(stderr, " %2x", arr[i]);
 					 }
 				fprintf(stderr, "sending vai inerface : %s packet length: %d\n", pkt->iface, pkt->len);
