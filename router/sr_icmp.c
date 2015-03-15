@@ -68,7 +68,7 @@ void icmp_echo(sr_instance_t* sr,
 		printf("ICMP check sum failed!");
 		return;
 	}
-	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHOREPLY, 0);
+	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHO, 0);
 	
 }
 
