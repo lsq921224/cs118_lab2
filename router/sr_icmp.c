@@ -43,7 +43,7 @@ void send_icmp(sr_instance_t* sr,
 	sr_icmp_hdr_t* icmp_header = (sr_icmp_hdr_t*)packet;
 	icmp_header -> icmp_type = type;
 	icmp_header -> icmp_code = code;
-	memcpy(packet + sizeof(*icmp_header), data, len);
+	memcpy(packet + ICMP_HEADER_LEN, data, len);
 	icmp_header -> icmp_sum = 0;
 	icmp_header -> icmp_sum = cksum(icmp_header, ICMP_HEADER_LEN + len);
 	send_ip_packet(sr, des_ip, src_ip, IPPROTO_ICMP, packet, ICMP_HEADER_LEN + len);
