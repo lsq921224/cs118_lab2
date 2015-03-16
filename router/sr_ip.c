@@ -68,6 +68,8 @@ int send_packet (sr_instance_t* sr,
 	/*print_hdr_ip(packet); */
 	sr_ip_hdr_t* ip_header = (sr_ip_hdr_t*)packet;
 	uint32_t src_ip = ip_header->ip_src;
+	ip_header -> ip_sum = 0;
+	ip_header -> ip_sum = cksum(ip_header, IPV4_HEADER_LEN);
 	sr_rt_t* route = find_routing_entry(sr, des_ip);	/* try to find routing entry */
 	if (route == 0)						/* if not found ->ICMP net unreachable */
 	{
