@@ -229,10 +229,10 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 				memcpy (pkt -> buf,  arphdr->ar_sha, ETHER_ADDR_LEN);
 
 				fprintf(stderr, "sending vai inerface : %s packet length: %d\n", pkt->iface, pkt->len);
-								print_hdrs(pkt ->buf, pkt-> len);
 				sr_ip_hdr_t* ip_header = (sr_ip_hdr_t*)pkt->buf;
 				ip_header -> ip_sum = 0;
 				ip_header -> ip_sum = cksum(ip_header, IPV4_HEADER_LEN);
+				print_hdrs(pkt ->buf, pkt-> len);
 				fprintf(stderr, "printing out payload when sending\n");
 				char *arr = pkt -> buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN;
 				int i;
