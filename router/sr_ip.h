@@ -17,12 +17,14 @@ void handle_ip_packet(sr_instance_t* sr,
 		      uint8_t* packet, 
 		      unsigned len);
 
-int send_ip_packet(sr_instance_t* sr, 
+int send_ip_packet (sr_instance_t* sr,
 			uint32_t des_ip,
 			uint32_t src_ip,
-			unsigned char protocol, 
-			uint8_t* packet, 
-			unsigned len);
+			unsigned char protocol,
+			uint8_t* packet,
+			unsigned len,
+			uint16_t id,
+			uint16_t seq);
 
 int send_packet(sr_instance_t* sr,
 		uint32_t des_ip,
