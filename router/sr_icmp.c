@@ -65,15 +65,15 @@ void icmp_echo(sr_instance_t* sr,
 	uint16_t tempSum = icmp_header-> icmp_sum;
 	icmp_header -> icmp_sum = 0;
 	icmp_header -> icmp_sum = cksum(icmp_header, icmp_len);
-	uint16_t ip_id = * ((uint16_t) *(icmp_header + 4));
-	uint16_t ip_seq =* ( (uint16_t) *(icmp_header + 6));
-	fprintf(stderr, "icmp_id: %d icmp_seq: %d", ip_id, ip_seq);
+	uint16_t id = *(packet);
+	uint16_t seq = *(packet + 2);
+	fprintf(stderr, "icmp_id: %d icmp_seq: %d", id, seq);
 	if (tempSum != icmp_header-> icmp_sum)
 	{
 		printf("ICMP check sum failed!");
 		return;
 	}
-	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHOREPLY, 0, ip_id, ip_seq);
+	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHOREPLY, 0, id, seq);
 	
 }
 
