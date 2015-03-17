@@ -65,8 +65,8 @@ void icmp_echo(sr_instance_t* sr,
 	uint16_t tempSum = icmp_header-> icmp_sum;
 	icmp_header -> icmp_sum = 0;
 	icmp_header -> icmp_sum = cksum(icmp_header, icmp_len);
-	uint16_t ip_id = (uint16_t) *(icmp_header + 4);
-	uint16_t ip_seq = (uint16_t) *(icmp_header + 6);
+	uint16_t ip_id = * ((uint16_t) *(icmp_header + 4));
+	uint16_t ip_seq =* ( (uint16_t) *(icmp_header + 6));
 	fprintf(stderr, "icmp_id: %d icmp_seq: %d", ip_id, ip_seq);
 	if (tempSum != icmp_header-> icmp_sum)
 	{
