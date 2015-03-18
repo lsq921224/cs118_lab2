@@ -122,7 +122,7 @@ int send_ip_packet (sr_instance_t* sr,
 			uint32_t src_ip,
 			unsigned char protocol,
 			uint8_t* packet,
-			unsigned len,
+			unsigned len
 			)
 {
 	sr_rt_t* route = 0;
