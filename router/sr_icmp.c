@@ -42,13 +42,15 @@ void send_icmp(sr_instance_t* sr,
 {
 	fprintf(stderr, "Sending ICMP message");
 	uint8_t* packet = malloc(ICMP_HEADER_LEN + len);
-	sr_icmp_hdr_t* icmp_header = (sr_icmp_hdr_t*)packet;
-	icmp_header -> icmp_type = type;
-	icmp_header -> icmp_code = code;
+	icmp_t* icmp_header = (icmp_t*)packet;
+	icmp_header -> type = type;
+	icmp_header -> code = code;
+	icmp_header -> id = id;
+	icmp_header -> seq = seq;
 	memcpy(packet + ICMP_HEADER_LEN, data, len);
-	icmp_header -> icmp_sum = 0;
-	icmp_header -> icmp_sum = cksum(icmp_header, ICMP_HEADER_LEN + len);
-	send_ip_packet(sr, des_ip, src_ip, IPPROTO_ICMP, packet, ICMP_HEADER_LEN + len, id, seq);
+	icmp_header -> sum = 0;
+	icmp_header -> sum = cksum(icmp_header, ICMP_HEADER_LEN + len);
+	send_ip_packet(sr, des_ip, src_ip, IPPROTO_ICMP, packet, ICMP_HEADER_LEN + len);
 	free(packet);
 }
 
@@ -58,22 +60,20 @@ void icmp_echo(sr_instance_t* sr,
 		uint8_t* packet,
 		unsigned len)
 {
-	sr_icmp_hdr_t* icmp_header = (sr_icmp_hdr_t*)(packet + IPV4_HEADER_LEN);
+	icmp_t* icmp_header = (icmp_t*)(packet + IPV4_HEADER_LEN);
 	unsigned icmp_len = len - IPV4_HEADER_LEN;
 	if (icmp_header -> icmp_type != ICMP_ECHO)
 		return;
-	uint16_t tempSum = icmp_header-> icmp_sum;
-	icmp_header -> icmp_sum = 0;
-	icmp_header -> icmp_sum = cksum(icmp_header, icmp_len);
-	uint16_t id = *(packet);
-	uint16_t seq = *(packet + 2);
+	uint16_t tempSum = icmp_header-> sum;
+	icmp_header -> sum = 0;
+	icmp_header -> sum = cksum(icmp_header, icmp_len);
 	fprintf(stderr, "icmp_id: %d icmp_seq: %d", id, seq);
-	if (tempSum != icmp_header-> icmp_sum)
+	if (tempSum != icmp_header-> sum)
 	{
 		printf("ICMP check sum failed!");
 		return;
 	}
-	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHOREPLY, 0, id, seq);
+	send_icmp(sr, src_ip, des_ip, packet + IPV4_HEADER_LEN + ICMP_HEADER_LEN, len - IPV4_HEADER_LEN - ICMP_HEADER_LEN, ICMP_ECHOREPLY, 0, icmp_header->id, icmp_header->seq);
 	
 }
 
