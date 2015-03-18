@@ -23,6 +23,7 @@ struct icmp {
     unsigned short id;
     unsigned short seq;
 };
+typedef struct icmp icmp_t;
 
 void icmp_echo(sr_instance_t* sr, 
 		uint32_t des_ip, 
