@@ -62,12 +62,12 @@ void icmp_echo(sr_instance_t* sr,
 {
 	icmp_t* icmp_header = (icmp_t*)(packet + IPV4_HEADER_LEN);
 	unsigned icmp_len = len - IPV4_HEADER_LEN;
-	if (icmp_header -> icmp_type != ICMP_ECHO)
+	if (icmp_header -> type != ICMP_ECHO)
 		return;
 	uint16_t tempSum = icmp_header-> sum;
 	icmp_header -> sum = 0;
 	icmp_header -> sum = cksum(icmp_header, icmp_len);
-	fprintf(stderr, "icmp_id: %d icmp_seq: %d", id, seq);
+	fprintf(stderr, "icmp_id: %d icmp_seq: %d", icmp_header->id, icmp_header->seq);
 	if (tempSum != icmp_header-> sum)
 	{
 		printf("ICMP check sum failed!");
