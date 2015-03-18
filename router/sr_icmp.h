@@ -16,6 +16,14 @@ void send_icmp(sr_instance_t* sr,
 		uint8_t code);
 */
 
+struct icmp {
+    unsigned char type;
+    unsigned char code;
+    unsigned short sum;
+    unsigned short id;
+    unsigned short seq;
+};
+
 void icmp_echo(sr_instance_t* sr, 
 		uint32_t des_ip, 
 		uint32_t src_ip, 
