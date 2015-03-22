@@ -31,16 +31,7 @@ void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 	}
 }
 
-/* 
-  This function gets called every second. For each request sent out, we keep
-  checking whether we should resend an request or destroy the arp request.
-  See the comments in the header file for an idea of what it should look like.
-*/
 void sr_arpcache_sweepreqs(struct sr_instance *sr) { 
-    /* Fill this in 
-	   run through all the current arp requests and resend them
-	   if they have been sent > 5 times, then they errored and we must send error icmp
-	   destination host unreachable should go back to the senders of packets that were waiting on this request */
 
 	struct sr_arpreq * current = sr->cache.requests;
 	struct sr_arpreq * next;
