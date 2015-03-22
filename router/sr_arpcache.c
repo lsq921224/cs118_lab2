@@ -22,7 +22,7 @@ void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 			 {
 			  uint8_t* ip_pkt = (uint8_t*)(pkt->buf + ETHER_HEADER_LEN);
         		struct sr_ip_hdr* ip_header = (struct sr_ip_hdr*)(pkt->buf + ETHER_HEADER_LEN);
-        		if((ip_header->ip_p != IPPROTO_ICMP) || (((icmp_t*)(pkt->buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN))->icmp_code == 8))
+        		if((ip_header->ip_p != IPPROTO_ICMP) || (((icmp_t*)(pkt->buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN))->code == 8))
 			 {
         			  ip_header->ip_ttl++;
         			   ip_header->ip_sum = 0;
