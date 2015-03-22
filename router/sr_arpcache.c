@@ -15,6 +15,21 @@ void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 	if (difftime(time(0), req->sent > 1)) {
 
 		if (req->times_sent >= 5) {
+			struct sr_packet *pkt = req->packets;
+      			while(pkt != 0)
+			 {
+			  uint8_t* ip_pkt = (uint8_t*)(pkt->buf + ETHER_HEADER_LEN);
+        		struct sr_ip_hdr* ip_header = (struct sr_ip_hdr*)(pkt->buf + ETHER_HEADER_LEN);
+        		if((ip_header->ip_p != IPPROTO_ICMP) || (((icmp_t*)(pkt->buf + ETHER_HEADER_LEN + IPV4_HEADER_LEN))->icmp_code == 8))
+			 {
+        			  ip_header->ip_ttl++;
+        			   ip_header->ip_sum = 0;
+          			ip_header->ip_sum = cksum(ip_header, IPV4_HEADER_LEN);
+          			icmp_host_unreachable(sr, ip_header->ip_src, 0, ip_pkt, pkt->len - ETHER_HEADER_LEN);
+        		}
+        
+        		pkt = pkt->next;
+      			}
 			sr_arpreq_destroy(&sr->cache, req);
 		}
 		else {
