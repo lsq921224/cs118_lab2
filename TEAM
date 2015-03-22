@@ -1,0 +1,38 @@
+TEAM
+Shengqian Liu 904347248
+Setiawan Makmur
+
+Shengqian Liu is in charge of IP and ICMP whereas Setiawan focuses on ARP.
+
+When we receive a raw ethernet frame, we first check what type of message it is. If it is an ARP packet,
+we forward the packet to handle_arp() function, otherwise we forward it to handle_ip_packet().
+
+The ARP function in the project is to allow routers and hosts to connect to one another through
+broadcasting and uni-cast means. Hosts would initiate ARP requests to neighboring routers that may forward the
+packet to the intended destinations through the channel FFFFFFFF These ARP requests are handled in a way that
+the router's MAC address will be returned to the ARP request sender. After this initial set up is made,
+the router will receive an IP packet from the host and the router will attempt to forward the packet
+to the next hop using the interface on the routing table. The ARP request is made by the router for
+the destination host MAC address using the said interface determined by the routing table. The MAC
+address of the host will be received by the router. Finally, the router is able to forward the IP packet
+to the destination, using that MAC address.
+
+IP packets are put on hold when the router is awaiting ARP replies on the destination IP address.
+Once an ARP reply is received, the program checks the pool for IP packets that are on hold, and if the IP
+packets can now be sent with the learning of the new MAC address, the program will forward these
+packets. 
+
+The awaiting ARP requests are polled for 5 times. If they are polled more than 5 times, we will assume there
+is not hosts that can reply to the ARP requests, and then we will send an ICMP host unreachable message.
+
+The handle_ip function, on the other hand, first performs a check sum test. Once the test is passed, it
+check if the destined IP address is the router itself. If it is, then we check the type of the IP packet,
+if it is type other than ICMP, we drop the packet; otherwise, we process the ICMP message. If the ICMP type
+if ECHO_REQUEST, we send an ICMP_ECHO_REPLY back.
+
+If the ICMP packet is sent to others, we loop up the routing table and decrease TTL. If TTL is equal to 0,
+we send an ICMP Time exceed message. Then if the routing entry is not found in the table, we will send an
+ICMP network unreachable. Otherwise, we find the IP of next hop and look up in the ARP table. If we are able 
+to find an ARP entry, we will use it as DEST MAC address, and use outgoing interface MAC as src MAC address 
+and send the IP packet. If we cannot find an ARP entry, we will store the packet and send an ARP request 
+and the process goes to ARP function if we have an reply.
