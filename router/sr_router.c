@@ -244,32 +244,9 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 
 			}
 			sr_arpreq_destroy(&(sr->cache), pending);
-			/*
-			print_addr_ip_int(arphdr->ar_sip);
-			
-			print_addr_ip_int(ntohl(pending->ip));
-			if(ntohl(pending->ip) == arphdr->ar_sip){			
-				sr_arpreq_send_packets(sr, pending);
-			}
-			pending = pending->next;
-			*/
+		
 		}
 	}
     
 }
 
-
-void sr_arpreq_send_packets(struct sr_instance * sr, struct sr_arpreq * req) {
-	struct sr_packet * current = req->packets;
-
-	while (current != NULL) {
-		struct sr_arpentry * entry = sr_arpcache_lookup(&(sr->cache), req->ip);
-		if (entry != NULL) {
-			unsigned char * destMAC = entry->mac;
-			memcpy(((sr_ethernet_hdr_t *) current->buf)->ether_dhost, destMAC, sizeof(unsigned char) * ETHER_ADDR_LEN);
-			sr_send_packet(sr, current->buf, current->len, current->iface);
-			free(entry);
-		}
-		current = current->next;
-	}
-}
