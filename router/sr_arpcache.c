@@ -10,6 +10,8 @@
 #include "sr_router.h"
 #include "sr_if.h"
 #include "sr_protocol.h"
+#include "sr_icmp.h"
+#include "sr_ip.h"
 
 void sr_check_timeout_req(struct sr_instance * sr, struct sr_arpreq * req) {
 	if (difftime(time(0), req->sent > 1)) {
