@@ -186,35 +186,35 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 		return;
 	}
 	
-	sr_arp_hdr_t *arphdr = (sr_arp_hdr_t*)(packet);
-	arphdr->ar_hrd = ntohs(arphdr->ar_hrd);		/* Convert all network address to host addresses */
-	arphdr->ar_pro = ntohs(arphdr->ar_pro);
-	arphdr->ar_op = ntohs(arphdr->ar_op);
-	arphdr->ar_sip = ntohl(arphdr->ar_sip);
-	arphdr->ar_tip = ntohl(arphdr->ar_tip);
+	sr_arp_hdr_t *arpheader = (sr_arp_hdr_t*)(packet);
+	arpheader->ar_hrd = ntohs(arpheader->ar_hrd);		/* Convert all network address to host addresses */
+	arpheader->ar_pro = ntohs(arpheader->ar_pro);
+	arpheader->ar_op = ntohs(arpheader->ar_op);
+	arpheader->ar_sip = ntohl(arpheader->ar_sip);
+	arpheader->ar_tip = ntohl(arpheader->ar_tip);
 	
-	if(arphdr->ar_op == 1){ /* Receiving a request */
-        memcpy((void*) (arphdr->ar_tha), (void *) (arphdr->ar_sha), (sizeof(unsigned char) * ETHER_ADDR_LEN)); /* switch around the fields (dest to src, vice versa) */
-		uint32_t targetIP = arphdr->ar_tip;
-		arphdr->ar_tip = arphdr->ar_sip;
-		arphdr->ar_sip = targetIP;
+	if(arpheader->ar_op == 1){ /* Receiving a request */
+        memcpy((void*) (arpheader->ar_tha), (void *) (arpheader->ar_sha), (sizeof(unsigned char) * ETHER_ADDR_LEN)); /* switch around the fields (dest to src, vice versa) */
+		uint32_t targetIP = arpheader->ar_tip;
+		arpheader->ar_tip = arpheader->ar_sip;
+		arpheader->ar_sip = targetIP;
         
 		struct sr_if* interfaces = sr->if_list;
 		while(interfaces != NULL){ /* Walk through interfaces if any of the interfaces has targetIP address */
 			
 			if(ntohl(interfaces->ip) == targetIP){	/* Respond only if there is a match */
-                memcpy((void*) (arphdr->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
-				sr_arp_send_message(sr, arp_op_reply, arphdr->ar_tha, htonl(arphdr->ar_tip), interface); /* Send reply with interface that has targetIP address */
+                memcpy((void*) (arpheader->ar_sha), (void *) (interfaces->addr), (sizeof(unsigned char) * ETHER_ADDR_LEN));
+				sr_arp_send_message(sr, arp_op_reply, arpheader->ar_tha, htonl(arpheader->ar_tip), interface); /* Send reply with interface that has targetIP address */
 				break;
 			}
             interfaces = interfaces->next;
 		}
 
 	}
-	if (arphdr->ar_op == 2){ /* Receiving a reply */
+	if (arpheader->ar_op == 2){ /* Receiving a reply */
 
 		fprintf(stderr, "ar_op is 2\n");
-		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache,arphdr->ar_sha,htonl(arphdr->ar_sip)); 
+		struct sr_arpreq* pending = sr_arpcache_insert(&sr->cache,arpheader->ar_sha,htonl(arpheader->ar_sip)); 
 		if(pending == NULL)
 		{
 			fprintf(stderr,"pending is null\n");
@@ -226,7 +226,7 @@ void sr_handle_arp_packet(struct sr_instance* sr,
 			while (pkt != NULL)
 			{
 				fprintf(stderr, "now have arp entry, send packet again\n");
-				memcpy (pkt -> buf,  arphdr->ar_sha, ETHER_ADDR_LEN);
+				memcpy (pkt -> buf,  arpheader->ar_sha, ETHER_ADDR_LEN);
 
 				fprintf(stderr, "sending vai inerface : %s packet length: %d\n", pkt->iface, pkt->len);
 				sr_ip_hdr_t* ip_header = (sr_ip_hdr_t*)(pkt->buf + ETHER_HEADER_LEN);
